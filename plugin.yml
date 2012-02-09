@@ -1,0 +1,27 @@
+name: SimpleVanish
+version: ${project.version}
+description: ${project.description}
+
+author: Travis Watkins
+website: ${project.url}
+
+main: com.probablycoding.bukkit.simplevanish.SimpleVanish
+
+
+commands:
+  vanish:
+    description: Go invisible
+    permission: simplevanish.vanish
+  unvanish:
+    description: Reappear
+    permission: simplevanish.unvanish
+
+permissions:
+  simplevanish:
+    description: Allow the player to vanish and reappear
+    children:
+      simplevanish.vanish:
+        description: Allow the player to vanish
+      simplevanish.unvanish:
+        description: Allow the player to reappear
+
