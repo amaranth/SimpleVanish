@@ -13,24 +13,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class SimpleVanish extends JavaPlugin implements Listener {
     public List<String> invisible;
 
-    public void enableVanish(Player player, boolean force) {
-        if (!invisible.contains(player.getName()) || force) {
-            for (Player other : getServer().getOnlinePlayers()) {
-                if (other.hasPermission("simplevanish.showvanished")) {
-                    continue;
-                }
-                other.hidePlayer(player);
+    public void enableVanish(Player player) {
+        for (Player other : getServer().getOnlinePlayers()) {
+            if (other.hasPermission("simplevanish.showvanished")) {
+                continue;
             }
-
-            invisible.add(player.getName());
-            player.sendMessage(ChatColor.RED + "Poof!");
-        } else {
-            player.sendMessage(ChatColor.RED + "You are already vanished!");
+            other.hidePlayer(player);
         }
+
+        player.sendMessage(ChatColor.RED + "Poof!");
     }
 
-    public void disableVanish(Player player, boolean force) {
-        if (invisible.remove(player.getName()) || force) {
+    public void disableVanish(Player player) {
+        if (invisible.remove(player.getName())) {
             for (Player other : getServer().getOnlinePlayers()) {
                 other.showPlayer(player);
             }
@@ -77,14 +72,23 @@ public class SimpleVanish extends JavaPlugin implements Listener {
         if (!(sender instanceof Player))
             return false;
 
+        Player player = (Player) sender;
         if (command.getName().equalsIgnoreCase("vanish")) {
-            if (args.length == 1 && args[0].equalsIgnoreCase("list"))
-                showVanishList((Player) sender);
-            else
-                enableVanish((Player) sender, false);
+            if (args.length == 1 && args[0].equalsIgnoreCase("list")) {
+                showVanishList(player);
+            }
+            else {
+                if (invisible.contains(player.getName())) {
+                    player.sendMessage(ChatColor.RED + "You are already vanished!");
+                }
+                else {
+                    invisible.add(player.getName());
+                    enableVanish(player);
+                }
+            }
         }
         else if (command.getName().equalsIgnoreCase("unvanish")) {
-            disableVanish((Player) sender, false);
+            disableVanish((Player) sender);
         }
 
         return true;
@@ -93,7 +97,7 @@ public class SimpleVanish extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (invisible.contains(event.getPlayer().getName()))
-            enableVanish(event.getPlayer(), true);
+            enableVanish(event.getPlayer());
 
         if (event.getPlayer().hasPermission("simplevanish.showvanished"))
             return;
