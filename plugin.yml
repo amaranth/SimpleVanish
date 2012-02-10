@@ -24,4 +24,6 @@ permissions:
         description: Allow the player to vanish
       simplevanish.unvanish:
         description: Allow the player to reappear
+      simplevanish.showvanished:
+        description: Allow the player to see other vanished players
 
