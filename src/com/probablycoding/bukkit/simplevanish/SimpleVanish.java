@@ -14,7 +14,7 @@ public class SimpleVanish extends JavaPlugin implements Listener {
     public List<String> invisible;
 
     public void enableVanish(Player player, boolean force) {
-        if (invisible.add(player.getName()) || force) {
+        if (!invisible.contains(player.getName()) || force) {
             for (Player other : getServer().getOnlinePlayers()) {
                 if (other.hasPermission("simplevanish.showvanished")) {
                     continue;
@@ -22,6 +22,7 @@ public class SimpleVanish extends JavaPlugin implements Listener {
                 other.hidePlayer(player);
             }
 
+            invisible.add(player.getName());
             player.sendMessage(ChatColor.RED + "Poof!");
         } else {
             player.sendMessage(ChatColor.RED + "You are already vanished!");
@@ -40,27 +41,51 @@ public class SimpleVanish extends JavaPlugin implements Listener {
         }
     }
 
-    @Override
+    public void showVanishList(Player player) {
+        String result = "";
+        boolean first = true;
+        for (String hidden : invisible) {
+            if (getServer().getPlayerExact(hidden) == null)
+                continue;
+
+            if (first) {
+                result += hidden;
+                first = false;
+                continue;
+            }
+
+            result += ", " + hidden;
+        }
+
+        if (result.length() == 0)
+            player.sendMessage(ChatColor.RED + "All players are visible!");
+        else
+            player.sendMessage(ChatColor.RED + "Vanished players: " + result);
+    }
+
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         invisible = getConfig().getStringList("vanished");
     }
 
-    @Override
     public void onDisable() {
         getConfig().set("vanished", invisible);
         saveConfig();
     }
 
-    @Override
     public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
         if (!(sender instanceof Player))
             return false;
 
-        if (command.getName().equalsIgnoreCase("vanish"))
-            enableVanish((Player) sender, false);
-        else if (command.getName().equalsIgnoreCase("unvanish"))
+        if (command.getName().equalsIgnoreCase("vanish")) {
+            if (args.length == 1 && args[0].equalsIgnoreCase("list"))
+                showVanishList((Player) sender);
+            else
+                enableVanish((Player) sender, false);
+        }
+        else if (command.getName().equalsIgnoreCase("unvanish")) {
             disableVanish((Player) sender, false);
+        }
 
         return true;
     }
